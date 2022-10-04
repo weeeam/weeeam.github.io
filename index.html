@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>P G U</title>
+    <link href="https://dl.dropboxusercontent.com/s/ckwvvkfiqes31gx/pgu-favicon.png" rel="icon" type="image/x-icon">
+    <link rel="stylesheet" href="https://cooltipz.jackdomleo.dev/css/cooltipz.min.css">
+    <script language="javascript" type="text/javascript">
+        function SelectAll(id) {
+            $(id).focus();
+            $(id).select();
+        }
+
+
+        function OnCopy() {
+            var copyText = $("final_pass");
+            var copybtn = document.querySelector('#copybtn');
+            copyText.select();
+            copyText.setSelectionRange(0, 99999); /*For mobile devices*/
+            document.execCommand("copy");
+            copybtn.setAttribute('class', 'chboxlb2 buttonx cooltipz--left cooltipz--visible');
+
+            setTimeout(function() {
+                copybtn.setAttribute('class', 'chboxlb2 buttonx');
+            }, 2000);
+        }
+
+        function auto_grow(element) {
+            element.style.height = "5px";
+            element.style.height = (element.scrollHeight + 10) + "px";
+        }
+
+        function MakePhonetic(szPassword) {
+            var theWords = ["ace", "best", "coffee", "drip", "egg", "fruit", "golf", "hi", "ice", "jack", "korean", "loft", "music", "nut", "omelet", "park", "queen", "rope", "sound", "top", "up", "video", "walmart", "x", "you", "zip"];
+            var szPhonetic = "";
+
+            for (var i = 0; i < szPassword.length; i++) {
+                var c = szPassword.charCodeAt(i);
+                if (65 <= c && c <= 90) {
+                    c -= 65;
+                    szPhonetic += theWords[c].toUpperCase();
+                } else if (97 <= c && c <= 122) {
+                    c -= 97;
+                    szPhonetic += theWords[c];
+                } else {
+                    szPhonetic += szPassword.substring(i, i + 1);
+                }
+
+                szPhonetic += " ";
+            }
+            return szPhonetic;
+        }
+
+        function InsertChar(szCharSet, nBufferLength, szBuffer) {
+            var bAllUnique = $("AllUniqueC").checked;
+            if (bAllUnique == false) {
+                var nPos = Math.floor(Math.random() * szCharSet.length);
+                var nInsertPos = Math.floor(Math.random() * nBufferLength);
+                var szSwap = szBuffer.substring(0, nInsertPos) + szCharSet.substring(nPos, nPos + 1) + szBuffer.substring(nInsertPos, nBufferLength);
+                szBuffer = szSwap;
+                return szBuffer;
+            }
+
+            var szSwap = "";
+            var szCharSetCopy = szCharSet;
+            while (true) {
+                if (szCharSetCopy.length == 0) {
+                    break;
+                }
+                var nPos = Math.floor(Math.random() * szCharSetCopy.length);
+                var szNewTmp = szCharSetCopy.substring(nPos, nPos + 1);
+                var nTmp = szBuffer.indexOf(szNewTmp);
+
+                if (nTmp == -1) {
+                    var nInsertPos = Math.floor(Math.random() * nBufferLength);
+                    szSwap = szBuffer.substring(0, nInsertPos) + szNewTmp + szBuffer.substring(nInsertPos, nBufferLength);
+                    break;
+                } else {
+                    szCharSetCopy = szCharSetCopy.replace(szNewTmp, '');
+                }
+            }
+
+            szBuffer = szSwap;
+            return szBuffer;
+        }
+
+        function GeneratePassword(nLength, bNosimilar, bLowercase, bUppercase, bNumbers, bSymbols) {
+            var szLower = "abcdefghjkmnpqrstuvwxyz";
+            var szUpper = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+            var szNumber = "23456789";
+            var szSymbols = ""; //"!\"#$%&'()*+,-./:;<=>?@[]^_`{}~";
+
+            if (bSymbols == 1)
+                szSymbols = $("CustomizeSymbols").value;
+
+            if (!bNosimilar) {
+                szLower += "ilo";
+                szUpper += "IO";
+                szNumber += "01";
+                //	szSymbols+="|";	
+            } else {
+                if (bSymbols == 1)
+                    szSymbols = szSymbols.replace('|', '');
+            }
+
+            var szAll = "";
+            var nSetNumber = 0;
+            if (bLowercase == 1) {
+                szAll += szLower;
+                nSetNumber++;
+            }
+            if (bUppercase == 1) {
+                szAll += szUpper;
+                nSetNumber++;
+            }
+            if (bNumbers == 1) {
+                szAll += szNumber;
+                nSetNumber++;
+            }
+            if (bSymbols == 1) {
+                szAll += szSymbols;
+                nSetNumber++;
+            }
+
+            if (nSetNumber == 0) {
+                szBuffer = "You must select at least one character set!";
+                return szBuffer;
+            }
+
+            var nAllLength = szAll.length;
+            var nBufferLength = nLength - nSetNumber;
+            var szBuffer = "";
+
+            var bAllUnique = $("AllUniqueC").checked;
+
+            if (bAllUnique && nAllLength < nLength) {
+                szBuffer = "No enough character sets selected.";
+                return szBuffer;
+            }
+
+            if ($("BeginWithC").checked) {
+                if ($("Lowercase").checked == false && $("Uppercase").checked == false) {
+                    szBuffer = "No Lowercase or Uppercase letters selected.";
+                    return szBuffer;
+                }
+            }
+
+            if (!bAllUnique) {
+                for (var i = 0; i < nBufferLength; i++) {
+                    var nPos = Math.floor(Math.random() * nAllLength);
+                    szBuffer += szAll.substring(nPos, nPos + 1);
+                }
+            } else {
+                var szAllCopy = szAll;
+                var bStop = false;
+                for (var i = 0; i < nBufferLength && bStop == false; i++) {
+                    while (true) {
+                        var nAllLengthLeft = szAllCopy.length;
+                        if (nAllLengthLeft == 0) {
+                            bStop = true;
+                            break;
+                        }
+
+                        var nPos = Math.floor(Math.random() * nAllLengthLeft);
+                        var strNewTmp = szAllCopy.substring(nPos, nPos + 1);
+                        var nTmp = szBuffer.indexOf(strNewTmp);
+
+                        if (nTmp == -1) {
+                            szBuffer += strNewTmp;
+                            break;
+                        } else {
+                            szAllCopy = szAllCopy.replace(strNewTmp, '');
+                        }
+                    }
+                }
+            }
+
+            if (bUppercase) {
+                szBuffer = InsertChar(szUpper, nBufferLength, szBuffer)
+                nBufferLength++;
+            }
+
+            if (bLowercase) {
+                szBuffer = InsertChar(szLower, nBufferLength, szBuffer)
+                nBufferLength++;
+            }
+
+            if (bNumbers) {
+                szBuffer = InsertChar(szNumber, nBufferLength, szBuffer)
+                nBufferLength++;
+            }
+
+            if (bSymbols)
+                szBuffer = InsertChar(szSymbols, nBufferLength, szBuffer)
+
+
+            if ($("NoSeqC").checked) {
+                var bSeq = false;
+                for (var j = 0; j < szBuffer.length - 1; j++) {
+                    var n1 = szBuffer.charCodeAt(j);
+                    var n2 = szBuffer.charCodeAt(j + 1);
+
+                    if ((n2 - n1 == 1) && ((n1 >= 48 && n1 <= 56) || (n1 >= 65 && n1 <= 89) || (n1 >= 97 && n1 <= 121))) {
+                        bSeq = true;
+                        szBuffer = "Seq";
+                        break;
+                    }
+                }
+            }
+
+            if ($("BeginWithC").checked) {
+                var n3 = szBuffer.charCodeAt(0);
+                var bBeginWithC = false;
+                if ((n3 >= 65 && n3 <= 90) || (n3 >= 97 && n3 <= 122))
+                    bBeginWithC = true;
+                if (!bBeginWithC)
+                    szBuffer = "NoC";
+            }
+
+            return szBuffer;
+        }
+
+        function $(id) {
+            return document.getElementById(id);
+        }
+
+        function doWork() {
+            var strLength = $("pgLength").value;
+            var bNosimilar = 0;
+            if ($("Nosimilar").checked) bNosimilar = 1;
+            var bSymbols = 0;
+            if ($("Symbols").checked) bSymbols = 1;
+            var bLowercase = 0;
+            if ($("Lowercase").checked) bLowercase = 1;
+            var bUppercase = 0;
+            if ($("Uppercase").checked) bUppercase = 1;
+            var bNumbers = 0;
+            if ($("Numbers").checked) bNumbers = 1;
+            var nQuantity = $("pgQuantity").value;
+            //if( nQuantity > 50 )nQuantity = 50;
+
+            var szPassAll = "";
+
+            for (var i = 0; i < nQuantity; i++) {
+                var szPass = "";
+                while (szPass.length <= 3)
+                    szPass = GeneratePassword(strLength, bNosimilar, bLowercase, bUppercase, bNumbers, bSymbols);
+
+                szPassAll += szPass;
+
+                if (i != nQuantity - 1)
+                    szPassAll += "\n";
+            }
+
+            $('final_pass').value = szPassAll;
+
+            var textArea = $('final_pass');
+            auto_grow(textArea);
+
+            //     var szPhonetic = MakePhonetic( szPass );
+            //     $('PhoneticPronunciation').innerHTML = szPhonetic;		
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #333e50;
+            margin: 0;
+        }
+        
+        input,
+        select,
+        textarea {
+            outline: none;
+        }
+        
+        select#pgLength {
+            max-width: 50px;
+            padding: 3px;
+            border: none;
+        }
+        
+        .chboxl {
+            min-width: 320px;
+        }
+        
+        .chboxl1 {
+            min-width: 297px;
+        }
+        
+        .chboxl2 {
+            min-width: 175px;
+        }
+        
+        .chboxlb1.buttonx {
+            border-right: 1px solid transparent;
+        }
+        
+        .chboxlb1 {
+            min-width: 175px;
+        }
+        
+        .chboxlb2 {
+            min-width: 173.5px;
+        }
+        
+        #final_pass {
+            min-width: 172px;
+            max-width: 172px;
+            margin-bottom: -4px;
+            border: none;
+            height: 29px;
+        }
+        
+        .chboxl,
+        .chboxl2 {
+            padding: 6px 10px;
+            font-size: 14px;
+            font-weight: 400;
+            line-height: 1;
+            width: auto;
+            color: #555;
+            border: 1px solid rgb(0, 0, 0);
+            display: table-cell;
+            white-space: nowrap;
+            vertical-align: middle;
+            background-color: #f6f6f6;
+            text-align: center;
+            border-right-width: 0;
+        }
+        
+        .chboxr,
+        .chboxr2 {
+            font-size: 14px;
+            color: #585858;
+            border: 1px solid rgb(0, 0, 0);
+            vertical-align: middle;
+            display: table-cell;
+            background-color: #fff;
+            cursor: pointer;
+            margin: 0;
+        }
+        
+        input[type="number"] {
+            max-width: 50px;
+            padding: 5px 0px;
+            text-align: center;
+            border: none;
+        }
+        
+        input[type="checkbox"] {
+            height: 20px;
+            width: 20px;
+            text-align: center;
+            cursor: pointer;
+        }
+        
+        * {
+            box-sizing: border-box;
+        }
+        
+        .buttonx {
+            padding: 10px 10px;
+            font-size: 15px;
+            font-weight: bold;
+            line-height: 1;
+            width: auto;
+            color: black;
+            border: 1px solid black;
+            display: table-cell;
+            white-space: nowrap;
+            vertical-align: middle;
+            background-color: #f6f6f6;
+            text-align: center;
+            cursor: pointer;
+        }
+        
+        .buttonx:hover,
+        .buttonx:active {
+            text-decoration: none;
+            background-color: #ddd;
+            background-image: linear-gradient(#eee, #ddd);
+            border-color: #ccc;
+            border: 1px solid #51a7e8;
+            box-shadow: inset 0px 0px 1rem 1px rgb(30 128 255 / 50%);
+        }
+        
+        #CustomizeSymbols {
+            max-width: 180px;
+        }
+        
+        .group {
+            margin-top: .1rem;
+        }
+        
+        .wrap {
+            width: 360px;
+            margin: 15px auto;
+            padding: 12px 7px 70px 5px;
+            background: #ffffff;
+            border-radius: 10px 10px;
+            overflow: hidden;
+        }
+        
+        .Logo {
+            float: left;
+            padding-left: 5px;
+        }
+        
+        .Logotext {
+            padding: 25px 8px;
+            font-size: 20px;
+            font-weight: bold;
+        }
+        
+        .name {
+            display: none;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+        
+        #copyright {
+            width: 360px;
+            text-align: center;
+            margin: auto;
+            color: white;
+            padding: 10px;
+            margin-top: 50px;
+        }
+    </style>
+
+</head>
+
+<body onload="doWork();">
+    <main class="wrap">
+        <div class="header">
+            <div class="Logo"><img src="https://i.imgur.com/hQTM2HT.png"></div>
+            <div class="Logotext">Password Ge<span class="name1">n</span><span class="name" id="idN">n</span>erator Ultra</div>
+        </div>
+        <hr>
+        <div class="group">
+            <div class="chboxl chboxl1">P<span class="name2">a</span><span class="name" id="ida">a</span>ssword Length (max 50):</div>
+            <div class="chboxr"><input class="select2" id="" type="number" value="16" min="6" style="display: none;">
+                <select id="pgLength" class="select1" title="Select the length of your password.">
+               <optgroup label="Weak">
+                  <option value="6">6</option>
+                  <option value="7">7</option>
+                  <option value="8">8</option>
+                  <option value="9">9</option>
+                  <option value="10">10</option>
+                  <option value="11">11</option>
+                  <option value="12">12</option>
+                  <option value="13">13</option>
+                  <option value="14">14</option>
+                  <option value="15">15</option>
+              </optgroup>
+              <optgroup label="Strong">
+                  <option value="16" selected>16</option>
+                  <option value="17">17</option>
+                  <option value="18">18</option>
+                  <option value="19">19</option>
+                  <option value="20">20</option>
+                  <option value="21">21</option>
+                  <option value="22">22</option>
+                  <option value="23">23</option>
+                  <option value="24">24</option>
+                  <option value="25">25</option>
+                  <option value="26">26</option>
+                  <option value="27">27</option>
+                  <option value="28">28</option>
+                  <option value="29">29</option>
+                  <option value="30">30</option>
+                  <option value="31">31</option>
+                  <option value="32">32</option>
+                  <option value="33">33</option>
+                  <option value="34">34</option>
+                  <option value="35">35</option>
+                  <option value="36">36</option>
+                  <option value="37">37</option>
+                  <option value="38">38</option>
+                  <option value="39">39</option>
+                  <option value="40">40</option>
+                  <option value="41">41</option>
+                  <option value="42">42</option>
+                  <option value="43">43</option>
+                  <option value="44">44</option>
+                  <option value="45">45</option>
+                  <option value="46">46</option>
+                  <option value="47">47</option>
+                  <option value="48">48</option>
+                  <option value="49">49</option>
+                  <option value="50">50</option>
+                  <option value="51">51</option>
+                  <option value="52">52</option>
+                  <option value="53">53</option>
+                  <option value="54">54</option>
+                  <option value="55">55</option>
+                  <option value="56">56</option>
+                  <option value="57">57</option>
+                  <option value="58">58</option>
+                  <option value="59">59</option>
+                  <option value="60">60</option>
+                  <option value="61">61</option>
+                  <option value="62">62</option>
+                  <option value="63">63</option>
+                  <option value="64">64</option>
+                  <option value="65">65</option>
+                  <option value="66">66</option>
+                  <option value="67">67</option>
+                  <option value="68">68</option>
+                  <option value="69">69</option>
+                  <option value="70">70</option>
+                  <option value="71">71</option>
+                  <option value="72">72</option>
+                  <option value="73">73</option>
+                  <option value="74">74</option>
+                  <option value="75">75</option>
+                  <option value="76">76</option>
+                  <option value="77">77</option>
+                  <option value="78">78</option>
+                  <option value="79">79</option>
+                  <option value="80">80</option>
+                  <option value="81">81</option>
+                  <option value="82">82</option>
+                  <option value="83">83</option>
+                  <option value="84">84</option>
+                  <option value="85">85</option>
+                  <option value="86">86</option>
+                  <option value="87">87</option>
+                  <option value="88">88</option>
+                  <option value="89">89</option>
+                  <option value="90">90</option>
+                  <option value="91">91</option>
+                  <option value="92">92</option>
+                  <option value="93">93</option>
+                  <option value="94">94</option>
+                  <option value="95">95</option>
+                  <option value="96">96</option>
+                  <option value="97">97</option>
+                  <option value="98">98</option>
+                  <option value="99">99</option>
+                  <option value="100">100</option>
+                  <option value="101">101</option>
+                  <option value="102">102</option>
+                  <option value="103">103</option>
+                  <option value="104">104</option>
+                  <option value="105">105</option>
+                  <option value="106">106</option>
+                  <option value="107">107</option>
+                  <option value="108">108</option>
+                  <option value="109">109</option>
+                  <option value="110">110</option>
+                  <option value="111">111</option>
+                  <option value="112">112</option>
+                  <option value="113">113</option>
+                  <option value="114">114</option>
+                  <option value="115">115</option>
+                  <option value="116">116</option>
+                  <option value="117">117</option>
+                  <option value="118">118</option>
+                  <option value="119">119</option>
+                  <option value="120">120</option>
+                  <option value="121">121</option>
+                  <option value="122">122</option>
+                  <option value="123">123</option>
+                  <option value="124">124</option>
+                  <option value="125">125</option>
+                  <option value="126">126</option>
+                  <option value="127">127</option>
+                  <option value="128">128</option>
+              </optgroup>
+              <optgroup label="Unbelievable">
+                  <option value="256">256</option>
+                  <option value="512">512</option>
+                  <option value="1024">1024</option>
+                  <option value="2048">2048</option>
+              </optgroup>
+            </select>
+            </div>
+        </div>
+        <div class="group">
+            <div class="chboxl">I<span class="name3">n</span><span class="name" id="idn">n</span>clude Numbers(123456):</div>
+            <div class="chboxr"><input type="checkbox" class="larger" name="Numbers" id="Numbers" checked></div>
+        </div>
+        <div class="group">
+            <div class="chboxl">Inclu<span class="name4">d</span><span class="name" id="idd">d</span>e Lowercase Characters(abcdejkl):</div>
+            <div class="chboxr"><input type="checkbox" class="larger" name="Lowercase" id="Lowercase" checked></div>
+        </div>
+        <div class="group">
+            <div class="chboxl">In<span class="name5">c</span><span class="name" id="idk">k</span>lude Uppercase Characters(ABCDEFGH):</div>
+            <div class="chboxr"><input type="checkbox" class="larger" name="Uppercase" id="Uppercase" checked></div>
+        </div>
+        <div class="group">
+            <div class="chboxl">Beg<span class="name6">i</span><span class="name" id="idi">i</span>n With A Letter:</div>
+            <div class="chboxr"><input type="checkbox" class="larger" name="BeginWithC" id="BeginWithC"></div>
+        </div>
+        <div class="group">
+            <div class="chboxl">Include <span class="name7">S</span><span class="name" id="ids">S</span>ymbols:<input name="CustomizeSymbols" id="CustomizeSymbols" type="text" size="75" value="!&quot;#$%&amp;&#39;()*+,-./:;&lt;=&gt;?@[\]^_`{|}~" class="txt_options"></div>
+            <div class="chboxr"><input type="checkbox" class="larger" name="Symbols" id="Symbols"></div>
+        </div>
+        <div class="group">
+            <div class="chboxl">No Similar C<span class="name8">h</span><span class="name" id="idh">h</span>aracters(i,l,1,L,o,0,O):</div>
+            <div class="chboxr"><input type="checkbox" class="larger" name="Nosimilar" id="Nosimilar"></div>
+        </div>
+        <div class="group">
+            <div class="chboxl">N<span class="name9">o</span><span class="name" id="ido">o</span> Duplicate Characters:</div>
+            <div class="chboxr"><input type="checkbox" class="larger" name="AllUniqueC" id="AllUniqueC"></div>
+        </div>
+        <div class="group">
+            <div class="chboxl">No Sequential Cha<span class="name10">r</span><span class="name" id="idr">r</span>acters(abc, 789):</div>
+            <div class="chboxr"><input type="checkbox" class="larger" name="NoSeqC" id="NoSeqC"></div>
+        </div>
+        <div class="group">
+            <div class="chboxl chboxl1">Quantity(max 50):</div>
+            <div class="chboxr">
+                <input id="pgQuantity" type="number" value="1" min="1">
+            </div>
+        </div>
+        <div class="group">
+            <div class="chboxlb1 buttonx" onclick="doWork();">Generate Passwords</div>
+            <div id="copybtn" class="chboxlb2 buttonx" onclick="OnCopy();" aria-label="Copied!">Copy to Clipboard</div>
+        </div>
+        <div class="group">
+            <div class="chboxl2">Your New Passwords:</div>
+            <div class="chboxr2">
+                <textarea id="final_pass" placeholder="Generated Passwords" onclick="" ;="" style="height: 29px;" readonly></textarea>
+            </div>
+        </div>
+    </main>
+    <div id="copyright">Password Generator Ultra © 2021</div>
+
+
+
+    <script>
+        var name1 = document.querySelector('.name1');
+        var name2 = document.querySelector('.name2');
+        var name3 = document.querySelector('.name3');
+        var name4 = document.querySelector('.name4');
+        var name5 = document.querySelector('.name5');
+        var name6 = document.querySelector('.name6');
+        var name7 = document.querySelector('.name7');
+        var name8 = document.querySelector('.name8');
+        var name9 = document.querySelector('.name9');
+        var name10 = document.querySelector('.name10');
+        var idN = document.querySelector('#idN');
+        var ida = document.querySelector('#ida');
+        var idn = document.querySelector('#idn');
+        var idd = document.querySelector('#idd');
+        var idk = document.querySelector('#idk');
+        var idi = document.querySelector('#idi');
+        var ids = document.querySelector('#ids');
+        var idh = document.querySelector('#idh');
+        var ido = document.querySelector('#ido');
+        var idr = document.querySelector('#idr');
+        var pic = document.querySelector('.Logo');
+        var num = document.querySelector('.select2');
+        var select = document.querySelector('.select1');
+
+        name1.addEventListener('click', function() {
+            name2.style.display = "none";
+            ida.style.display = "inline";
+
+        });
+        ida.addEventListener('click', function() {
+            name3.style.display = "none";
+            name2.style.display = "inline";
+            ida.style.display = "none";
+            idn.style.display = "inline";
+        });
+        idn.addEventListener('click', function() {
+            name4.style.display = "none";
+            name3.style.display = "inline";
+            idn.style.display = "none";
+            idd.style.display = "inline";
+        });
+        idd.addEventListener('click', function() {
+            name5.style.display = "none";
+            name4.style.display = "inline";
+            idd.style.display = "none";
+            idk.style.display = "inline";
+        });
+        idk.addEventListener('click', function() {
+            name6.style.display = "none";
+            name5.style.display = "inline";
+            idk.style.display = "none";
+            idi.style.display = "inline";
+        });
+        idi.addEventListener('click', function() {
+            name7.style.display = "none";
+            name6.style.display = "inline";
+            idi.style.display = "none";
+            ids.style.display = "inline";
+        });
+        ids.addEventListener('click', function() {
+            name8.style.display = "none";
+            name7.style.display = "inline";
+            ids.style.display = "none";
+            idh.style.display = "inline";
+        });
+        idh.addEventListener('click', function() {
+            name9.style.display = "none";
+            name8.style.display = "inline";
+            idh.style.display = "none";
+            ido.style.display = "inline";
+        });
+        ido.addEventListener('click', function() {
+            name10.style.display = "none";
+            name9.style.display = "inline";
+            ido.style.display = "none";
+            idr.style.display = "inline";
+        });
+        idr.addEventListener('click', function() {
+            idr.style.display = "none";
+            name10.style.display = "inline";
+            select.setAttribute('id', '');
+            select.style.display = "none"
+            num.setAttribute('id', 'pgLength');
+            num.style.display = "block"
+        });
+        pic.addEventListener('click', function() {
+            select.setAttribute('id', 'pgLength');
+            select.style.display = "block"
+            num.setAttribute('id', '');
+            num.style.display = "none"
+        });
+    </script>
+    <!-- <script>
+        var sel = document.querySelector('#pgLength');
+        var opt1 = document.createElement('optgroup');
+        var opt2 = document.createElement('optgroup');
+        var opt3 = document.createElement('optgroup');
+        opt1.setAttribute('label', 'weak');
+        opt2.setAttribute('label', 'strong');
+        opt3.setAttribute('label', 'Unbelievable');
+        sel.appendChild(opt1);
+        sel.appendChild(opt2);
+        sel.appendChild(opt3);
+        for (var i = 6; i < 16; i++) {
+            opt1.innerHTML += `<option>${i}</option>`;
+        }
+        for (var i = 16; i < 129; i++) {
+            opt2.innerHTML += `<option>${i}</option>`;
+        }
+        for (var i = 129; i < 1024; i++) {
+            opt3.innerHTML += `<option>${i}</option>`;
+        }
+    </script> -->
+
+</body>
+
+</html>
